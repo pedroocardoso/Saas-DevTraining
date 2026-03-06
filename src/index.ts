@@ -1,20 +1,44 @@
-import 'dotenv/config'
+import { Message } from "@mui/icons-material";
+import "dotenv/config";
 
 // Import the framework and instantiate it
-import Fastify from 'fastify'
-const fastify = Fastify({
-  logger: true
-})
+import Fastify from "fastify";
+import {
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider,
+} from "fastify-type-provider-zod";
+import { z } from "zod";
 
-// Declare a route
-fastify.get('/', async function handler() {
-  return { hello: 'world' }
-})
+const app = Fastify({
+  logger: true,
+});
 
-// Run the server!
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/",
+  schema: {
+    description: "Hello World",
+    tags: ["Hello world"],
+    response: {
+      200: z.object({
+        message: z.string(),
+      }),
+    },
+  },
+  handler: () => {
+    return {
+      message: "Hello World",
+    };
+  },
+});
+
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
+
 try {
-  await fastify.listen({ port: Number(process.env.PORT) || 8080 })
+  await app.listen({ port: Number(process.env.PORT) || 8080 });
 } catch (err) {
-  fastify.log.error(err)
-  process.exit(1)
+  app.log.error(err);
+  process.exit(1);
 }
