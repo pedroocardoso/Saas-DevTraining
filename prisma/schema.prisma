@@ -18,6 +18,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  WorkoutPlans  WorkoutPlan[]
 
   @@unique([email])
   @@map("user")
@@ -69,4 +70,50 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model WorkoutPlan {
+  id          String       @id @default(uuid())
+  name        String
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  workoutDays WorkoutDay[]
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum WeekDay {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model WorkoutDay {
+  id            String            @id @default(uuid())
+  name          String
+  workoutPlanId String
+  workoutPlan   WorkoutPlan       @relation(fields: [workoutPlanId], references: [id])
+  isRest        Boolean           @default(false)
+  weekDay       WeekDay
+  exercises     WorkoutExercise[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model WorkoutExercise {
+  id                String     @id @default(uuid())
+  name              String
+  order             Int
+  workoutDayId      String
+  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  sets              Int
+  reps              Int
+  restTimeInSeconds Int
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 }
